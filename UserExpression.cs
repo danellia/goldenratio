@@ -14,10 +14,8 @@ namespace goldenratio
         public double b { get; set; }
         public double precision { get; set; }
         public string userExpression { get; set; }
-        public List<PointPairList> minPointProgressList { get; set; }
-        PointPairList list;
         int step = 1;
-        double d = (Math.Sqrt(5) + 1) / 2;
+        double d = (Math.Sqrt(5) - 1) / 2;
 
         public Task<PointPairList> getGraphPoints()
         {
@@ -38,54 +36,43 @@ namespace goldenratio
             double pointY = expression.calculate();
             return pointY;
         }
-        public Task<PointPairList> getMinPointCoords()
+        public Task<List<PointPairList>> getMinPointCoords()
         {
             return Task.Run(() =>
             {
-                double leftX = b - (b - a) / d;
-                //double leftX = a + d;
-                double leftY = getPointY(a);
-                double rightX = a + (b - a) / d;
-                //double rightX = b - d;
-                double rightY = getPointY(b);
-                Debug.WriteLine(String.Format("leftX={0}, leftY={1}, rightX={2}, rightY={3}, a={4}, b={5}", leftX, leftY, rightX, rightY, a, b));
-
-                while (Math.Abs(rightY - leftY) > precision)
+                double leftX, rightX;
+                List<PointPairList> minPointProgressList = new List<PointPairList>();
+                while (true)
                 {
-                    if (leftY < rightY)
+                    leftX = b - (b - a) * d;
+                    rightX = a + (b - a) * d;
+                    if (getPointY(leftX) >= getPointY(rightX))
                     {
-                        b = rightX;
-                        rightX = leftX;
-                        rightY = leftY;
-                        leftX = b - (b - a) / d;
-                        leftY = getPointY(leftX);
-                        list = new PointPairList();
-                        list.Add(new PointPair(leftX, leftY));
-                        minPointProgressList.Add(list);
+                        a = leftX;
+                        addPointPair(leftX, minPointProgressList);
                     }
                     else
                     {
-                        a = leftX;
-                        leftX = rightX;
-                        leftY = rightY;
-                        rightX = a + (b - a) / d;
-                        rightY = getPointY(rightX);
-                        list = new PointPairList();
-                        list.Add(new PointPair(leftX, leftY));
-                        minPointProgressList.Add(list);
+                        b = rightX;
+                        addPointPair(rightX, minPointProgressList);
                     }
-
-                    list = new PointPairList();
-                    list.Add(new PointPair(leftX, leftY));
-                    minPointProgressList.Add(list);
-                    Debug.WriteLine(String.Format("leftX={0}, leftY={1}, rightX={2}, rightY={3}, a={4}, b={5}", leftX, leftY, rightX, rightY, a, b));
-
+                    if (Math.Abs(b - a) < precision)
+                        break;
                 }
-                
-                PointPairList minPointList = new PointPairList();
-                minPointList.Add(new PointPair((b + a) / 2, getPointY((b + a) / 2)));
-                return minPointList;
+                addPointPair(round((b + a) / 2), minPointProgressList);
+                return minPointProgressList;
             });
+        }
+        private void addPointPair(double coord, List<PointPairList> progressList)
+        {
+            PointPairList list = new PointPairList();
+            list.Add(new PointPair(coord, getPointY(coord)));
+            progressList.Add(list);
+            //Debug.WriteLine("addpair" + list[0].X + " " + list[0].Y + " " + progressList[progressList.Count - 1][0].X);
+        }
+        private double round(double coord)
+        {
+            return Math.Round(coord, precision.ToString().Length - 2);
         }
     }
 }

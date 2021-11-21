@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows.Forms;
 using ZedGraph;
+using System.Collections.Generic;
 
 namespace goldenratio
 {
@@ -10,6 +12,9 @@ namespace goldenratio
     {
         GraphPane pane;
         UserExpression expression;
+        LineItem minPoint;
+        List<PointPairList> minPointCoords;
+        int index = -1;
         public Form1()
         {
             InitializeComponent();
@@ -47,6 +52,8 @@ namespace goldenratio
                 LineItem curve = pane.AddCurve(expression.userExpression, await getPoints, Color.Purple, SymbolType.None);
                 zedGraphControl.AxisChange();
                 zedGraphControl.Refresh();
+
+                countMinToolStripMenuItem.Enabled = true;
             }
             catch (FormatException)
             {
@@ -59,53 +66,78 @@ namespace goldenratio
         }
         private async void countMinStepsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Task<PointPairList> getMinPointCoords = expression.getMinPointCoords();
-            //LineItem minPoint = pane.AddCurve("", await getMinPointCoords, Color.BlueViolet, SymbolType.Circle);
-            textBoxMinPointX.Text = getMinPointCoords.Result[0].X.ToString();
-            textBoxMinPointY.Text = getMinPointCoords.Result[0].Y.ToString();
-
-            if (getMinPointCoords.Result.Contains(getMinPointCoords.Result[0]))
+            Task<List<PointPairList>> getMinPointCoords = expression.getMinPointCoords();
+            if (minPointCoords == null)
             {
-                zedGraphControl.AxisChange();
+                minPointCoords = await getMinPointCoords;
             }
-            zedGraphControl.Refresh();
+            else
+            {
+                
+            }
+            buttonStepForward.Enabled = true;
+            countMinToolStripMenuItem.Enabled = false;
         }
         private async void countMinAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Task<PointPairList> getMinPointCoords = expression.getMinPointCoords();
-            PointPairList minPointCoords = await getMinPointCoords;
-            foreach (var point in expression.minPointProgressList)
+            Task<List<PointPairList>> getMinPointCoords = expression.getMinPointCoords();
+            if (minPointCoords == null)
             {
-                LineItem minPoint = pane.AddCurve("", point, Color.BlueViolet, SymbolType.Circle);
-                zedGraphControl.Refresh();
+                minPointCoords = await getMinPointCoords;
             }
-            textBoxMinPointX.Text = getMinPointCoords.Result[0].X.ToString();
-            //textBoxMinPointY.Text = getMinPointCoords.Result[0].Y.ToString();
+            for (int pointIndex = 0; pointIndex < minPointCoords.Count; ++pointIndex)
+            {
+                pane.CurveList.Remove(minPoint);
+                await Task.Delay(500);
+                minPoint = buttonStepAction(pointIndex, buttonStepForward, buttonStepBack, pointIndex >= minPointCoords.Count - 1);
+            }
+            
+            index = minPointCoords.Count - 1;
 
-            //if (getMinPointCoords.Result.Contains(getMinPointCoords.Result[0]))
-            //{
-            //    zedGraphControl.AxisChange();
-            //}
-            //zedGraphControl.Refresh();
+            buttonStepBack.Enabled = true;
+            countMinToolStripMenuItem.Enabled = false;
         }
         private void buttonStepBack_Click(object sender, EventArgs e)
         {
-
+            pane.CurveList.Remove(minPoint);
+            minPoint = buttonStepAction(--index, buttonStepBack, buttonStepForward, index <= 0);
         }
         private void buttonStepForward_Click(object sender, EventArgs e)
         {
-
+            pane.CurveList.Remove(minPoint);
+            minPoint = buttonStepAction(++index, buttonStepForward, buttonStepBack, index >= minPointCoords.Count - 1);
+        }
+        private LineItem buttonStepAction(int index, Button button, Button otherButton, bool condition)
+        {
+            if (condition == true)
+            {
+                button.Enabled = false;
+                otherButton.Enabled = true;
+            }
+            else
+            {
+                button.Enabled = true;
+                otherButton.Enabled = true;
+                minPoint = pane.AddCurve("", minPointCoords[index], Color.BlueViolet, SymbolType.Circle);
+                zedGraphControl.AxisChange();
+                zedGraphControl.Refresh();
+                textBoxMinPointX.Text = minPointCoords[index][0].X.ToString();
+                textBoxMinPointY.Text = minPointCoords[index][0].Y.ToString();
+            }
+            return minPoint;
         }
         private void clearAllStripMenuItem_Click(object sender, EventArgs e)
         {
             clearValueTextBoxes();
             clearMinPointTextBoxes();
             clearGraph();
+            disableMinControls();
         }
         private void clearGraphtoolStripMenuItem_Click(object sender, EventArgs e)
         {
             clearMinPointTextBoxes();
             clearGraph();
+            disableMinControls();
         }
         private void clearValuesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -128,6 +160,12 @@ namespace goldenratio
         {
             pane.CurveList.Clear();
             zedGraphControl.Refresh();
+        }
+        private void disableMinControls()
+        {
+            countMinToolStripMenuItem.Enabled = false;
+            buttonStepBack.Visible = false;
+            buttonStepForward.Visible = false;
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {

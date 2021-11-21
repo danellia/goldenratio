@@ -85,7 +85,7 @@ namespace goldenratio
             // countGraphToolStripMenuItem
             // 
             this.countGraphToolStripMenuItem.Name = "countGraphToolStripMenuItem";
-            this.countGraphToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.countGraphToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
             this.countGraphToolStripMenuItem.Text = "График";
             this.countGraphToolStripMenuItem.Click += new System.EventHandler(this.countGraphToolStripMenuItem_Click);
             // 
@@ -94,8 +94,9 @@ namespace goldenratio
             this.countMinToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.countMinStepsToolStripMenuItem,
             this.countMinAllToolStripMenuItem});
+            this.countMinToolStripMenuItem.Enabled = false;
             this.countMinToolStripMenuItem.Name = "countMinToolStripMenuItem";
-            this.countMinToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.countMinToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
             this.countMinToolStripMenuItem.Text = "Минимум";
             // 
             // countMinStepsToolStripMenuItem
@@ -278,6 +279,7 @@ namespace goldenratio
             // 
             // buttonStepBack
             // 
+            this.buttonStepBack.Enabled = false;
             this.buttonStepBack.Location = new System.Drawing.Point(11, 298);
             this.buttonStepBack.Name = "buttonStepBack";
             this.buttonStepBack.Size = new System.Drawing.Size(94, 29);
@@ -288,6 +290,7 @@ namespace goldenratio
             // 
             // buttonStepForward
             // 
+            this.buttonStepForward.Enabled = false;
             this.buttonStepForward.Location = new System.Drawing.Point(111, 298);
             this.buttonStepForward.Name = "buttonStepForward";
             this.buttonStepForward.Size = new System.Drawing.Size(94, 29);
