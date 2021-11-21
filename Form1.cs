@@ -15,6 +15,8 @@ namespace goldenratio
         LineItem minPoint;
         List<PointPairList> minPointCoords;
         int index = -1;
+        bool graphExists = false;
+
         public Form1()
         {
             InitializeComponent();
@@ -23,6 +25,7 @@ namespace goldenratio
         }
         private async void countGraphToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            graphExists = true;
             try
             {
                 expression = new UserExpression()
@@ -66,21 +69,28 @@ namespace goldenratio
         }
         private async void countMinStepsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            countMinToolStripMenuItem.Enabled = false;
             Task<List<PointPairList>> getMinPointCoords = expression.getMinPointCoords();
+            if (graphExists)
+            {
+                minPointCoords = null;
+                graphExists = false;
+            }
             if (minPointCoords == null)
             {
                 minPointCoords = await getMinPointCoords;
             }
-            else
-            {
-                
-            }
             buttonStepForward.Enabled = true;
-            countMinToolStripMenuItem.Enabled = false;
         }
         private async void countMinAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            countMinToolStripMenuItem.Enabled = false;
             Task<List<PointPairList>> getMinPointCoords = expression.getMinPointCoords();
+            if (graphExists)
+            {
+                minPointCoords = null;
+                graphExists = false;
+            }
             if (minPointCoords == null)
             {
                 minPointCoords = await getMinPointCoords;
@@ -95,7 +105,6 @@ namespace goldenratio
             index = minPointCoords.Count - 1;
 
             buttonStepBack.Enabled = true;
-            countMinToolStripMenuItem.Enabled = false;
         }
         private void buttonStepBack_Click(object sender, EventArgs e)
         {
@@ -164,8 +173,8 @@ namespace goldenratio
         private void disableMinControls()
         {
             countMinToolStripMenuItem.Enabled = false;
-            buttonStepBack.Visible = false;
-            buttonStepForward.Visible = false;
+            buttonStepBack.Enabled = false;
+            buttonStepForward.Enabled = false;
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {

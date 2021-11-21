@@ -66,9 +66,8 @@ namespace goldenratio
         private void addPointPair(double coord, List<PointPairList> progressList)
         {
             PointPairList list = new PointPairList();
-            list.Add(new PointPair(coord, getPointY(coord)));
+            list.Add(new PointPair(round(coord), round(getPointY(coord))));
             progressList.Add(list);
-            //Debug.WriteLine("addpair" + list[0].X + " " + list[0].Y + " " + progressList[progressList.Count - 1][0].X);
         }
         private double round(double coord)
         {
